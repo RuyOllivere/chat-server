@@ -16,8 +16,15 @@ const io = new Server(server, {
   },
 });
 
+const connectedUsers = new Map();
+
 io.on('connection', (socket) => {
   console.log('a user connected');
+
+  socket.on('user info', ({ nickname, color }) => {
+    connectedUsers.set(socket.id, { nickname, color });
+    io.emit('users update', Array.from(connectedUsers.values()));
+  });
 
   socket.on('chat message', (msg) => {
     io.emit('chat message', msg);
@@ -25,6 +32,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('user disconnected');
+    connectedUsers.delete(socket.id);
+    io.emit('users update', Array.from(connectedUsers.values()));
   });
 });
 
